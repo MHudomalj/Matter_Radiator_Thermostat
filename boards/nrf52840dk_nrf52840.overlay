@@ -1,0 +1,99 @@
+/* Copyright (c) 2023 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+ / {
+	chosen {
+		nordic,pm-ext-flash = &mx25r64;
+	};
+	
+	temperature_adc {
+		compatible = "arduino,uno-adc";
+		#io-channel-cells = <1>;
+		io-channel-map = <0 &arduino_adc 0>;
+		io-channels = <&adc 1>;
+	};
+
+	motor_adc {
+		compatible = "arduino,uno-adc";
+		#io-channel-cells = <1>;
+		io-channel-map = <0 &arduino_adc 5>;
+		io-channels = <&adc 7>;
+	};
+
+	leds {
+		motor1: motor_1 {
+			gpios = <&gpio1 11 (GPIO_ACTIVE_LOW)>;
+		};
+
+		motor2: motor_2 {
+			gpios = <&gpio1 12 0>;
+		};
+
+		motor3: motor_3 {
+			gpios = <&gpio1 13 0>;
+		};
+
+		motor4: motor_4 {
+			gpios = <&gpio1 14 (GPIO_ACTIVE_LOW)>;
+		};
+	};
+};
+
+
+/ {
+	/*
+	* In some default configurations within the nRF Connect SDK,
+	* e.g. on nRF52840, the chosen zephyr,entropy node is &cryptocell.
+	* This devicetree overlay ensures that default is overridden wherever it
+	* is set, as this application uses the RNG node for entropy exclusively.
+	*/
+	chosen {
+		zephyr,entropy = &rng;
+	};
+};
+
+/* Disable unused peripherals to reduce power consumption */
+&adc {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	status = "okay";
+
+	channel@1{
+		reg = <1>;
+		zephyr,gain = "ADC_GAIN_1_6";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,input-positive = <NRF_SAADC_AIN1>; /* P0.03 */
+		zephyr,resolution = <12>;
+	};
+
+	channel@7{
+		reg = <7>;
+		zephyr,gain = "ADC_GAIN_1_6";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,input-positive = <NRF_SAADC_AIN7>; /* P0.31 */
+		zephyr,resolution = <12>;
+	};
+};
+&uart1 {
+	status = "disabled";
+};
+&i2c0 {
+	status = "disabled";
+};
+&pwm0 {
+	status = "disabled";
+};
+&spi1 {
+	status = "disabled";
+};
+&spi3 {
+	status = "disabled";
+};
+&usbd {
+	status = "disabled";
+};
